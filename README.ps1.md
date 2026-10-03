@@ -1,0 +1,325 @@
+# SMB Dump Grabber PowerShell
+
+`SMB Dump Grabber PowerShell` is a Windows PowerShell-based local analysis tool for reviewing previously dumped SMB shares.
+
+It searches local share dumps for credentials, secrets, Active Directory indicators, configuration files, keys, certificates, databases, backups, and other potentially high-value artifacts.
+
+## Features
+
+- File and directory inventory
+- Interesting filename detection
+- High-value artifact shortlist
+- Credential and secret hunting
+- Active Directory privilege indicators
+- Windows authentication and deployment artifacts
+- DevOps / Cloud configuration detection
+- Database connection string detection
+- Email and identity extraction
+- Key and certificate discovery
+- Database discovery
+- Backup and archive detection
+- Optional ZIP / archive inspection
+- Optional Git history analysis
+- Custom keyword search
+- Wildcard support with `*`
+- Case-sensitive or case-insensitive custom searches
+- Severity-based output:
+  - `CRITICAL`
+  - `HIGH`
+  - `MEDIUM`
+- Markdown report generation
+- Text summary generation
+
+---
+
+## Requirements
+
+Recommended:
+
+```text
+Windows 10 / 11
+PowerShell 5.1 or newer
+```
+
+Optional:
+
+```text
+Git
+7-Zip
+```
+
+Git is only required when using Git history inspection.
+
+7-Zip is useful for inspecting `.7z` and `.rar` archives.
+
+---
+
+## Usage
+
+Start the grabber with:
+
+```powershell
+.\smbgrabber.ps1 -Share "C:\Dumps\Department_Shares"
+```
+
+Example:
+
+```powershell
+.\smbgrabber.ps1 -Share "C:\Users\pentest\Desktop\SMB_Dump"
+```
+
+---
+
+## Interactive Keyword Search
+
+When started normally, the tool displays an interactive keyword prompt before the analysis begins.
+
+```text
+╔══════════════════════════════════════════════════════════════╗
+║                 CUSTOM KEYWORD SEARCH                       ║
+╠══════════════════════════════════════════════════════════════╣
+║ Search mode: CASE-SENSITIVE                                 ║
+║ Wildcard: '*' = any number of characters                   ║
+║ Other special characters are searched literally.           ║
+║ Examples: svc_*   *password*   C:\Users\*\Desktop\*        ║
+║                                                              ║
+║ Press x and ENTER to start the grabber.                     ║
+╚══════════════════════════════════════════════════════════════╝
+
+keyword>
+```
+
+You can enter multiple keywords:
+
+```text
+keyword> svc_*
+[+] Added keyword: svc_*
+
+keyword> *password*
+[+] Added keyword: *password*
+
+keyword> C:\Users\*\Desktop\*
+[+] Added keyword: C:\Users\*\Desktop\*
+
+keyword> x
+
+[+] Starting SMB Grabber...
+```
+
+The scan starts after entering:
+
+```text
+x
+```
+
+---
+
+## Custom Keywords
+
+You can also provide keywords directly from the command line:
+
+```powershell
+.\smbgrabber.ps1 `
+  -Share "C:\Dumps\Department_Shares" `
+  -Keyword "*password*"
+```
+
+Multiple keywords:
+
+```powershell
+.\smbgrabber.ps1 `
+  -Share "C:\Dumps\Department_Shares" `
+  -Keyword "svc_*","*password*","C:\Users\*\Desktop\*"
+```
+
+### Case-insensitive search
+
+By default, custom keyword searches are case-sensitive.
+
+Use:
+
+```powershell
+-IgnoreCaseCustom
+```
+
+Example:
+
+```powershell
+.\smbgrabber.ps1 `
+  -Share "C:\Dumps\Department_Shares" `
+  -Keyword "*password*" `
+  -IgnoreCaseCustom
+```
+
+---
+
+## Archive Inspection
+
+Enable archive inspection with:
+
+```powershell
+.\smbgrabber.ps1 `
+  -Share "C:\Dumps\Department_Shares" `
+  -Archives
+```
+
+ZIP files can be inspected natively.
+
+For `.7z` and `.rar` files, `7z.exe` should be installed and available in `PATH`.
+
+---
+
+## Git History Inspection
+
+Enable Git history inspection:
+
+```powershell
+.\smbgrabber.ps1 `
+  -Share "C:\Dumps\Department_Shares" `
+  -GitHistory
+```
+
+This searches discovered Git repositories and reviews recent commit history for potentially sensitive information.
+
+---
+
+## Full Example
+
+```powershell
+.\smbgrabber.ps1 `
+  -Share "C:\Dumps\Department_Shares" `
+  -Archives `
+  -GitHistory `
+  -IgnoreCaseCustom `
+  -Keyword "*password*","svc_*","admin*"
+```
+
+---
+
+## Output Structure
+
+The grabber creates a timestamped result directory:
+
+```text
+smbgrab_Department_Shares_YYYYMMDD_HHMMSS\
+│
+├── hits\
+│   ├── credentials_secrets.txt
+│   ├── ad_privilege_indicators.txt
+│   ├── windows_auth_deployment.txt
+│   ├── devops_cloud.txt
+│   ├── database_connections.txt
+│   ├── identities.txt
+│   ├── custom_keywords.txt
+│   └── binary_strings_hits.txt
+│
+├── lists\
+│   ├── interesting_files.txt
+│   ├── high_value_artifacts.txt
+│   ├── key_cert_material.txt
+│   ├── archives_backups.txt
+│   ├── databases.txt
+│   └── repos.txt
+│
+├── meta\
+│   ├── files.tsv
+│   ├── dirs.txt
+│   ├── file_count.txt
+│   ├── size.txt
+│   └── custom_keywords.txt
+│
+├── priority\
+│   ├── CRITICAL.txt
+│   ├── HIGH.txt
+│   └── MEDIUM.txt
+│
+├── optional\
+│   ├── archive_contents.txt
+│   └── git_history.txt
+│
+├── REPORT.md
+└── SUMMARY.txt
+```
+
+---
+
+## Recommended Review Order
+
+Start with:
+
+```text
+priority\CRITICAL.txt
+priority\HIGH.txt
+lists\high_value_artifacts.txt
+hits\custom_keywords.txt
+hits\credentials_secrets.txt
+hits\ad_privilege_indicators.txt
+```
+
+Then review optional results:
+
+```text
+optional\git_history.txt
+optional\archive_contents.txt
+```
+
+---
+
+## Parameters
+
+| Parameter | Description |
+|---|---|
+| `-Share` | Path to the local SMB dump |
+| `-Output` | Custom output directory |
+| `-Keyword` | Add one or more custom search keywords |
+| `-IgnoreCaseCustom` | Perform custom keyword searches case-insensitively |
+| `-MaxBinMB` | Maximum file size used for the binary strings-like scan |
+| `-Context` | Context line setting |
+| `-Archives` | Enable archive inspection |
+| `-GitHistory` | Enable Git history inspection |
+| `-NoPrompt` | Skip the interactive keyword prompt |
+
+---
+
+## Example Workflow
+
+```powershell
+.\smbgrabber.ps1 -Share "C:\Pentest\Shares\Development"
+```
+
+Add keywords:
+
+```text
+keyword> password
+keyword> svc_*
+keyword> administrator
+keyword> x
+```
+
+The tool then analyzes the supplied directory and stores the results in a new timestamped output folder.
+
+---
+
+## PowerShell Execution Policy
+
+If PowerShell blocks script execution, you can start it for the current session with:
+
+```powershell
+Set-ExecutionPolicy -Scope Process Bypass
+```
+
+Then run:
+
+```powershell
+.\smbgrabber.ps1 -Share "C:\Dumps\Department_Shares"
+```
+
+This changes the execution policy only for the current PowerShell process.
+
+---
+
+## Disclaimer
+
+This tool only analyzes files already present in the supplied local directory.
+
+Use it only on systems, data, and environments you are authorized to assess.
