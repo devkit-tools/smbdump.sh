@@ -6,8 +6,8 @@ It helps identify potentially interesting files, credentials, secrets, Active Di
 
 ## Features
 
-- File and directory inventory
-- Interesting filename detection
+- File and directory inventory, hidden file and directory enumeration
+- Interesting and custom filename detection
 - Credential and secret hunting
 - Active Directory privilege indicators
 - Windows authentication and deployment artifacts
