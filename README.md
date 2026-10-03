@@ -42,14 +42,14 @@ When the program starts, you can optionally define custom keywords before the sc
 
 ```text
 ╔══════════════════════════════════════════════════════════════╗
-║                 CUSTOM KEYWORD SEARCH                       ║
+║                 CUSTOM KEYWORD SEARCH                        ║
 ╠══════════════════════════════════════════════════════════════╣
-║ Search mode: CASE-SENSITIVE                                 ║
-║ Wildcard: '*' = any number of characters                   ║
-║ Other special characters are searched literally.           ║
-║ Examples: svc_*   *password*   C:\Users\*\Desktop\*        ║
+║ Search mode: CASE-SENSITIVE                                  ║
+║ Wildcard: '*' = any number of characters                     ║
+║ Other special characters are searched literally.             ║
+║ Examples: svc_*   *password*   C:\Users\*\Desktop\*          ║
 ║                                                              ║
-║ Press x and ENTER to start the grabber.                     ║
+║ Press x and ENTER to start the grabber.                      ║
 ╚══════════════════════════════════════════════════════════════╝
 
 keyword>
